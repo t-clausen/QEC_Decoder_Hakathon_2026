@@ -36,13 +36,16 @@ def create_circuit(basis: str, rounds: int) -> stim.Circuit:
     assert rounds >= 1
 
     circuit = stim.Circuit()
+   
     circuit += coord
+    
     # Initialize data qubits to |0> or |+> depending on the basis
     circuit.append_operation("R", L_data_qubits+R_data_qubits)
     if basis == "X":
         circuit.append_operation("Tick")
         circuit.append_operation("H", L_data_qubits+R_data_qubits)
     circuit += syndrome
+    #print(circuit)
     circuit += det_init_x if basis == "X" else det_init_z
     # Add rounds of syndrome extraction (SHIFT_COORDS gives detectors from round t the time coordinate t)
     circuit += (syndrome + shift_time + det_round) * (rounds - 1)

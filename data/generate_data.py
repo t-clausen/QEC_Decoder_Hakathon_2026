@@ -62,8 +62,9 @@ if args.exclude_observable_flips:
 try:
     for k, basis in enumerate(args.basis):
         circuit = apply_circuit_noise(create_circuit(basis, args.rounds), p=args.noise_probability)
-        with open(os.path.join(args.out, f"{basis}_circuit.stim"), "w") as g:
+        with open(os.path.join(args.out, f"{basis}_circuit_sIdeal.stim"), "w") as g:#modified
             g.write(str(circuit))
+        #print(g)
         seed = None if args.seed is None else args.seed + k
         detector_events, observable_flips = test_dataset(circuit, shots=args.shots, seed=seed)
 

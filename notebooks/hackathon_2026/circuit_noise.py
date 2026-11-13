@@ -57,10 +57,14 @@ def _apply_circuit_noise(qec_circuit: stim.Circuit, p: float, in_use: set[int] |
                 measured_or_reset.update(qubits)
                 in_use.update(qubits)
             case "M":
-                noisy_circuit.append("X_ERROR", qubits, 5 * p)
+                #print(noisy_circuit)
+                #noisy_circuit.append("X_ERROR", qubits, 5 * p)
                 noisy_circuit.append(instruction)
+                #print(noisy_circuit)
                 measured_or_reset.update(qubits)
                 in_use.difference_update(qubits)
+            case "X_ERROR":
+                noisy_circuit.append(instruction)
             case "QUBIT_COORDS" | "SHIFT_COORDS" | "DETECTOR" | "OBSERVABLE_INCLUDE":
                 noisy_circuit.append(instruction)
                 continue
