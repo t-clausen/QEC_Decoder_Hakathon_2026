@@ -22,7 +22,7 @@ import json
 import os
 
 import numpy as np
-from hackathon_2026 import apply_circuit_noise, create_circuit, test_dataset
+from notebooks.hackathon_2026 import apply_circuit_noise, create_circuit, test_dataset
 
 parser = argparse.ArgumentParser(description="Sample labelled shots in the Kaggle CSV format.")
 parser.add_argument("out", help="output folder, e.g. data/generated")

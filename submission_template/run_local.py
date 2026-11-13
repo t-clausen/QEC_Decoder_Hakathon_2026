@@ -38,7 +38,7 @@ if args.threads:  # must be set before numpy, numba or torch are imported
 
 import numpy as np  # noqa: E402
 import stim  # noqa: E402
-from hackathon_2026 import load_kaggle_csv, logical_error_rate, save_submission  # noqa: E402
+from notebooks.hackathon_2026 import load_kaggle_csv, logical_error_rate, save_submission  # noqa: E402
 
 sys.path.insert(0, os.path.abspath(args.decoder))
 from decoder import decode  # noqa: E402

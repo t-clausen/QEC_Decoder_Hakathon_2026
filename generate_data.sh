@@ -1,0 +1,1 @@
+PYTHONPATH=$(pwd) python data/generate_data.py data/generated
