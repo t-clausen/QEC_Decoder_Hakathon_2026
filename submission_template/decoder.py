@@ -46,7 +46,7 @@ def data2syndrome(detector_events:np.ndarray, basis:bool) -> np.ndarray:
     prior_spatialdistance_X = np.array([0.794472, 0.014152, 0.102598, 0.005938, 0.032914, 0.04787, 0.001948, 0.000108,0])
     prior_spatialdistance_Z = np.array([0.90566, 0.072126, 0.013108, 0.00816, 0.000776, 0.000146, 2.4e-05,0])
     prior_velocity_X = np.array([0.47411, 0.151165, 0.2061275, 0.117615, 0.03862, 0.010235, 0.0019975, 0.00013,0])
-    prior_velocity_Z = np.array([0.1958, 0.122265, 0.4838475, 0.146135, 0.000115, 0.0106075, 0.0390625, 0.0021675])
+    prior_velocity_Z = np.array([0.1958, 0.122265, 0.4838475, 0.146135, 0.000115, 0.0106075, 0.0390625, 0.0021675,0])
     if not basis:
         prior_spatialdistance = prior_spatialdistance_X
         prior_velocity = prior_velocity_X
@@ -60,7 +60,7 @@ def data2syndrome(detector_events:np.ndarray, basis:bool) -> np.ndarray:
     acceptance_probabilities = np.zeros(syndrome_history.shape[0],float) #to store the acceptance probabilities for each shot
     
     #now, propose a syndrome history. Use a metropolis-hastings algorithm to propose various different syndrome histories, and use the priors to make an accept function, taking into account detector events
-    def acceptfunction(proposed, detector_strings, prior_spatialdistance_local, prior_velocity_X):
+    def acceptfunction(proposed, detector_strings, prior_spatialdistance_local, prior_velocity_local):
         #calculate the probability of the syndrome history given the priors and the detector events
         #first, compute the hamming distance (note that they are in integer form)
         hamming_distances_1 = np.zeros(proposed.shape, dtype=np.uint8)
@@ -80,7 +80,7 @@ def data2syndrome(detector_events:np.ndarray, basis:bool) -> np.ndarray:
         #print(hamming_distances_1[:10]) #print the first 10 hamming distances for the first prior
         probs1 = prior_spatialdistance_local[hamming_distances_1]
         #compute the probabilities for the second prior (despite the funny shape array)
-        probs2 = prior_velocity_X[hamming_distances_2]
+        probs2 = prior_velocity_local[hamming_distances_2]
         return np.prod(probs1,axis=1) * np.prod(probs2,axis=1) #return the product of the probabilities for each shot
     number_of_MCMC_steps = 10
     number_of_historypoints = 6
