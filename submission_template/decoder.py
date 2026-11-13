@@ -10,7 +10,7 @@ or loading trained weights. Training doesn't count, but it must be reproducible 
 import numpy as np
 import stim
 
-def syndrome2logical(last_syndrome:np.ndarray) -> np.ndarray:
+def syndrome2logical(last_syndrome:np.ndarray, basis:bool) -> np.ndarray:
     """
     last_syndrome: (shots, vectorsize) array of 7-bit syndrome history integers.
     Returns: (shots, 4) array of 0/1 logical error prediction probabilities.
@@ -18,16 +18,13 @@ def syndrome2logical(last_syndrome:np.ndarray) -> np.ndarray:
     # Replace this with your decoder. Predicting no flips gives an LER of about 0.29.
     return np.zeros((len(last_syndrome), vectorsize), dtype=np.uint8)
 
-
-def decode(circuit: stim.Circuit, detector_events: np.ndarray) -> np.ndarray:
+def data2syndrome(detector_events:np.ndarray, basis:bool) -> np.ndarray:
     """
-    circuit: the X or Z circuit, loaded with stim.Circuit.from_file.
-    detector_events: bool array of shape (shots, 70), columns D0 to D69.
-    Returns a 0/1 array of shape (shots, 4), columns L0 to L3.
+    detector_events: (shots, 70) array of 0/1 detector events.
+    Returns: (shots, 7) array of 7-bit syndrome history integers.
     """
-    #the decoding will be done in 2 stages. First, a syndrome string is predicted. After that, a probable logical error is inferred
     base = "X"
-    
+        
 
     #convert the detector events into strings of lengths: 7,14,14,14,14,7
     detector_strings_raw = np.zeros((detector_events.shape[0], 10), dtype=np.uint8)
@@ -46,6 +43,9 @@ def decode(circuit: stim.Circuit, detector_events: np.ndarray) -> np.ndarray:
     #priors, tabulated
     prior_spatialdistance = {0: 0.794472, 4: 0.014152, 1: 0.102598, 5: 0.005938, 3: 0.032914, 2: 0.04787, 6: 0.001948, 7: 0.000108}
     prior_velocity = {0: 0.47411, 2: 0.151165, 1: 0.2061275, 3: 0.117615, 4: 0.03862, 5: 0.010235, 6: 0.0019975, 7: 0.00013}
+    #format these as arrays:
+    prior_spatialdistance = np.array([0.794472, 0.014152, 0.102598, 0.005938, 0.032914, 0.04787, 0.001948, 0.000108])
+    prior_velocity = np.array([0.47411, 0.151165, 0.2061275, 0.117615, 0.03862, 0.010235, 6: 0.0019975, 7: 0.00013}
 
     syndrome_history = detector_strings.copy() #initial syndrome history guess
     #print(syndrome_history[:4,:]) #print the first 4 syndrome histories
@@ -58,12 +58,17 @@ def decode(circuit: stim.Circuit, detector_events: np.ndarray) -> np.ndarray:
         #first, compute the hamming distance (note that they are in integer form)
         hamming_distances_1 = np.zeros(proposed.shape[0], dtype=np.uint8)
         for i in range(proposed.shape[1]):
-            print(proposed[:3, i], detector_strings[:3, i])
-            hamming_distances_1 += np.unpackbits((proposed[:, i] ^ detector_strings[:, i]), axis=1).sum(axis=1)
+            var = proposed[:, i] ^ detector_strings[:, i]
+            unpacked = np.unpackbits(var[:, np.newaxis], axis=1)
+            summation = unpacked.sum(axis=1)
+            hamming_distances_1 += summation
         #second, compute the hamming distances for the history updates
-        hamming_distances_2 = np.zeros(proposed.shape[0],proposed.shape[1]-1, dtype=np.uint8)
+        hamming_distances_2 = np.zeros((proposed.shape[0],proposed.shape[1]-1), dtype=np.uint8)
         for i in range(proposed.shape[1]-1):
-            hamming_distances_2[:, i] = np.unpackbits((proposed[:, i] ^ proposed[:, i+1]), axis=1).sum(axis=1)
+            var = proposed[:, i] ^ proposed[:, i+1]
+            unpacked = np.unpackbits(var[:, np.newaxis], axis=1)
+            summation = unpacked.sum(axis=1)
+            hamming_distances_2[:, i] = summation
         #now, compute the probabilities given the priors
         probs1 = np.array([prior_spatialdistance[hd] for hd in hamming_distances_1])#!make this smarter later
         probs2 = np.array([prior_velocity[hd] for hd in hamming_distances_2])#!make this smarter later
@@ -89,8 +94,19 @@ def decode(circuit: stim.Circuit, detector_events: np.ndarray) -> np.ndarray:
                 syndrome_history[mask] = proposed_syndrome_history[mask]
                 MC_outcomes[n_MCMC] = syndrome_history
                 previous_probabilities = acceptance_probabilities
+    
+    return np.zeros((len(detector_events), vectorsize), dtype=np.uint8)
 
 
+def decode(circuit: stim.Circuit, detector_events: np.ndarray) -> np.ndarray:
+    """
+    circuit: the X or Z circuit, loaded with stim.Circuit.from_file.
+    detector_events: bool array of shape (shots, 70), columns D0 to D69.
+    Returns a 0/1 array of shape (shots, 4), columns L0 to L3.
+    """
+    #the decoding will be done in 2 stages. First, a syndrome string is predicted. After that, a probable logical error is inferred
+    
+    syndrome_estimates = data2syndrome(detector_events)
 
     # Replace this with your decoder. Predicting no flips gives an LER of about 0.29.
     return np.zeros((len(detector_events), 4), dtype=np.uint8)
