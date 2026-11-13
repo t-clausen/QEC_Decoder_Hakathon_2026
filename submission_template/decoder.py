@@ -16,7 +16,7 @@ def syndrome2logical(last_syndrome:np.ndarray) -> np.ndarray:
     Returns: (shots, 4) array of 0/1 logical error prediction probabilities.
     """
     # Replace this with your decoder. Predicting no flips gives an LER of about 0.29.
-    return np.zeros((len(syndrome_histories), 4), dtype=np.uint8)
+    return np.zeros((len(last_syndrome), vectorsize), dtype=np.uint8)
 
 
 def decode(circuit: stim.Circuit, detector_events: np.ndarray) -> np.ndarray:
