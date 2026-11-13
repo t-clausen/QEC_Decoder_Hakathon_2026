@@ -139,7 +139,7 @@ def decode(circuit: stim.Circuit, detector_events: np.ndarray) -> np.ndarray:
     detector_events: bool array of shape (shots, 70), columns D0 to D69.
     Returns a 0/1 array of shape (shots, 4), columns L0 to L3.
     """
-    if "31" in circuit[32]:
+    if "31" in str(circuit[32]):
         basis = True    
     else:
         basis = False
