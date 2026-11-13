@@ -1,0 +1,1 @@
+PYTHONPATH=$(pwd) python submission_template/run_local.py
