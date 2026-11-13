@@ -70,7 +70,7 @@ def run():
     return predictions, time.perf_counter() - start
 
 #test function
-run()
+
 
 times, first = [], None
 for i in range(args.runs):
